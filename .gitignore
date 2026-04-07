@@ -81,4 +81,6 @@ fabric.properties
 .hgtags
 .idea/
 MOAI.egg-info/
+MOAI_iplweb.egg-info/
 moai/__pycache__/
+.pytest_cache/

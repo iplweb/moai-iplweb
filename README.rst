@@ -2,12 +2,12 @@ This is a fork
 ==============
 
 This is a fork of original project, which can be found https://github.com/infrae/moai/ which
-includes TravisCI integration and Python 3 support. Both of those were returned to the original
+includes GitHub Actions CI and Python 3 support. Both of those were returned to the original
 authors in form of a pull request here: https://github.com/infrae/moai/pull/5 . In case
 the original author decides to integrate suggested changes and support Python 3, this fork
 will be irrelevant.
 
-Please note that other than updating this README and renaming setup.py file, there are no
+Please note that other than updating this README and modernizing the packaging, there are no
 bigger changes. This means that documentation may be obsolete in some parts. Patches accepted.
 
 
@@ -27,27 +27,19 @@ Installation Steps
 ==================
 
 MOAI is a normal python package. It is tested with Python 3.9, 3.10, 3.11, 3.12, 3.13.
-I recommend creating a virtualenv to install the package in.
+We recommend using `uv <https://docs.astral.sh/uv/>`_ for dependency management.
 
-http://pypi.python.org/pypi/virtualenv/
+Instructions below are for unix, but MOAI should also work on Windows.
 
-This makes development and deployment easier.
-Instructions below are for unix, but MOAI should also work on Windows
+Install MOAI using uv::
 
-Go into the MOAI directory with the setup.py, and run the virtualenv command
+    cd moai
+    uv sync
 
-> cd moai
-> virtualenv .
+To run tests::
 
-Now, activate the virtualenv
-
-> source bin/activate
-
-Install MOAI in the virtualenv using pip
-
-> pip install -e .
-
-(this will take a while)
+    uv sync --extra test
+    uv run pytest
 
 When this process finishes, Moai and all its dependencies will be installed.
 

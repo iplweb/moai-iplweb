@@ -1,0 +1,92 @@
+[build-system]
+requires = ["setuptools>=68.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "MOAI-iplweb"
+version = "2.0.0"
+description = "MOAI, A Open Access Server Platform for Institutional Repositories"
+readme = "ABOUT.txt"
+license = "BSD-3-Clause"
+requires-python = ">=3.9"
+authors = [
+    {name = "Michał Pasternak", email = "michal.dtz@gmail.com"},
+]
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Programming Language :: Python",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "Environment :: Web Environment",
+]
+dependencies = [
+    "pyoai",
+    "WSGIUtils",
+    "wsgi_intercept",
+    "webob",
+    "paste",
+    "pasteDeploy",
+    "pasteScript",
+    "sqlalchemy<2",
+    "setuptools<80",
+]
+
+[project.optional-dependencies]
+test = [
+    "pytest",
+    "lxml",
+]
+
+[project.urls]
+Homepage = "http://iplweb.pl/"
+
+[project.scripts]
+update_moai = "moai.tools:update_moai"
+
+[project.entry-points."paste.app_factory"]
+main = "moai.wsgi:app_factory"
+
+[project.entry-points."moai.content"]
+moai_example = "moai.example:ExampleContent"
+
+[project.entry-points."moai.database"]
+sqlite = "moai.database:SQLDatabase"
+mysql = "moai.database:SQLDatabase"
+postgres = "moai.database:SQLDatabase"
+oracle = "moai.database:SQLDatabase"
+
+[project.entry-points."moai.provider"]
+file = "moai.provider.file:FileBasedContentProvider"
+list = "moai.provider.list:ListBasedContentProvider"
+oai = "moai.provider.oai:OAIBasedContentProvider"
+fedora = "moai.provider.feadora:FedoraBasedContentProvider"
+
+[project.entry-points."moai.format"]
+oai_dc = "moai.metadata.oaidc:OAIDC"
+mods = "moai.metadata.mods:MODS"
+nl_mods = "moai.metadata.mods:NL_MODS"
+didl = "moai.metadata.didl:DIDL"
+nl_didl = "moai.metadata.dare_didl:DareDIDL"
+
+[tool.setuptools]
+packages = ["moai", "moai.metadata", "moai.provider"]
+
+[tool.setuptools.package-data]
+moai = ["*.xml", "*.txt"]
+
+[tool.pytest.ini_options]
+testpaths = ["moai"]
+python_files = ["test.py"]
+python_classes = ["*Test"]
+python_functions = ["test_*"]
+
+[tool.ruff]
+line-length = 120
+target-version = "py39"
+
+[tool.ruff.lint]
+select = ["E", "F", "W"]
+ignore = ["E501"]
+
+[tool.ruff.lint.per-file-ignores]
+"docs/conf.py" = ["F401", "E401"]
+"moai/database.py" = ["E711", "E712"]

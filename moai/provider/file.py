@@ -7,11 +7,12 @@ class FileBasedContentProvider(object):
     """Provides content by reading directories of files
     Implements the :ref:`IContentProvider` interface
     """
+
     def __init__(self, uri, content_filter="*"):
-        assert uri.startswith('file://'), 'unknown uri format'
+        assert uri.startswith("file://"), "unknown uri format"
         path = uri[7:]
         basedir, filename = os.path.split(path)
-        if '*' in filename or '?' in filename:
+        if "*" in filename or "?" in filename:
             content_filter = filename
             self._path = basedir
         else:
@@ -21,21 +22,21 @@ class FileBasedContentProvider(object):
 
     def set_logger(self, log):
         self._log = log
-        
+
     def _harvest(self, from_time=None):
         result = {}
         for p, d, f in os.walk(self._path):
             for directory in d:
-                if directory.startswith('.'):
+                if directory.startswith("."):
                     d.remove(directory)
             for file in f:
-                if file[0] in ['.', '#']:
+                if file[0] in [".", "#"]:
                     continue
                 if not fnmatch.fnmatch(file, self._filter):
                     continue
                 path = os.path.join(p, file)
-                if not from_time is None:
-                    mtime= os.path.getmtime(path)
+                if from_time is not None:
+                    mtime = os.path.getmtime(path)
                     if mtime < from_time:
                         continue
                 id = os.path.basename(path)
