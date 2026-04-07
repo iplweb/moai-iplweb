@@ -10,7 +10,7 @@ readme = "README.md"
 license = "BSD-3-Clause"
 requires-python = ">=3.9"
 authors = [
-    {name = "Michał Pasternak", email = "michal.dtz@gmail.com"},
+    {name = "Michał Pasternak", email = "m@iplweb.pl"},
 ]
 classifiers = [
     "Development Status :: 5 - Production/Stable",
