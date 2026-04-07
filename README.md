@@ -1,6 +1,8 @@
 # MOAI — Open Access Server Platform for Institutional Repositories
 
 [![Tests](https://github.com/iplweb/moai-iplweb/actions/workflows/test.yml/badge.svg)](https://github.com/iplweb/moai-iplweb/actions/workflows/test.yml)
+![Python Version](https://img.shields.io/python/required-version-toml?tomlFilePath=https%3A%2F%2Fraw.githubusercontent.com%2Fiplweb%2Fmoai-iplweb%2Fmain%2Fpyproject.toml)
+[![License](https://img.shields.io/badge/license-BSD--3--Clause-blue.svg)](LICENSE.txt)
 
 MOAI is a platform for aggregating content from different sources and publishing it through the [Open Archive Initiative Protocol for Metadata Harvesting](http://www.openarchives.org/pmh/) (OAI-PMH). It can harvest data from various sources — OAI feeds, SQL databases, XML files, Fedora Commons, EPrints, DSpace — and serve multiple OAI feeds from a single server, each with independent configuration.
 
@@ -17,19 +19,28 @@ This is a maintained fork of [MOAI by Infrae](https://github.com/infrae/moai/), 
 
 ## Installation
 
-MOAI is a normal Python package. It is tested with Python 3.9, 3.10, 3.11, 3.12, 3.13.
-We recommend using [uv](https://docs.astral.sh/uv/) for dependency management.
+### Supported Python versions
 
-Instructions below are for Unix, but MOAI should also work on Windows.
+| Python | 3.9 | 3.10 | 3.11 | 3.12 | 3.13 |
+|--------|-----|------|------|------|------|
+|        | ✓   | ✓    | ✓    | ✓    | ✓    |
 
-Install MOAI using uv:
+We recommend using [uv](https://docs.astral.sh/uv/) for dependency management. Instructions below are for Unix, but MOAI should also work on Windows.
+
+### Using uv (recommended)
 
 ```bash
 cd moai
 uv sync
 ```
 
-To run tests:
+### Using pip
+
+```bash
+pip install MOAI-iplweb
+```
+
+### Running tests
 
 ```bash
 uv sync --extra test
@@ -177,3 +188,7 @@ So a return value would look like:
    ...}
 }
 ```
+
+## License
+
+BSD-3-Clause — see [LICENSE.txt](LICENSE.txt) for details.

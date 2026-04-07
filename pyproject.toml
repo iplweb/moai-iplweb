@@ -6,7 +6,7 @@ build-backend = "setuptools.build_meta"
 name = "MOAI-iplweb"
 version = "2.0.0"
 description = "MOAI, A Open Access Server Platform for Institutional Repositories"
-readme = "ABOUT.txt"
+readme = "README.md"
 license = "BSD-3-Clause"
 requires-python = ">=3.9"
 authors = [
