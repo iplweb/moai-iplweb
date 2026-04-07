@@ -15,8 +15,8 @@ bigger changes. This means that documentation may be obsolete in some parts. Pat
 Installing MOAI
 ===============
 
-.. image:: https://img.shields.io/travis/iplweb/moai-iplweb.svg
-        :target: https://travis-ci.org/iplweb/moai-iplweb
+.. image:: https://github.com/iplweb/moai-iplweb/actions/workflows/test.yml/badge.svg
+        :target: https://github.com/iplweb/moai-iplweb/actions/workflows/test.yml
 
 
 The MOAI Software can be run in any wsgi compliant server. 
@@ -26,7 +26,7 @@ MOAI comes with a development server that can be used for testing. In production
 Installation Steps
 ==================
 
-MOAI is a normal python package. It is tested with Python 2.7, 3.4, 3.5, 3.6.
+MOAI is a normal python package. It is tested with Python 3.9, 3.10, 3.11, 3.12, 3.13.
 I recommend creating a virtualenv to install the package in.
 
 http://pypi.python.org/pypi/virtualenv/
