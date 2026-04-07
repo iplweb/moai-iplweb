@@ -35,6 +35,10 @@ test = [
     "pytest",
     "lxml",
 ]
+dev = [
+    "ruff",
+    "pre-commit",
+]
 
 [project.urls]
 Homepage = "http://iplweb.pl/"
