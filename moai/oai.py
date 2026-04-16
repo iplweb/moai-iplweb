@@ -1,6 +1,6 @@
 from pkg_resources import iter_entry_points
 
-from datetime import datetime
+from datetime import datetime, timezone
 import pkg_resources
 import time
 
@@ -113,7 +113,7 @@ class OAIServer(object):
         return header, metadata
 
     def _listQuery(self, set=None, from_=None, until=None, cursor=0, batch_size=10, identifier=None):
-        now = datetime.utcnow()
+        now = datetime.now(timezone.utc).replace(tzinfo=None)
         if until is not None and until > now:
             # until should never be in the future
             until = now
@@ -121,10 +121,10 @@ class OAIServer(object):
         if self.config.delay:
             # subtract delay from until_ param, if present
             if until is None:
-                until = datetime.utcnow()
+                until = datetime.now(timezone.utc).replace(tzinfo=None)
             until = until.timetuple()
             ut = time.mktime(until) - self.filter_data.delay
-            until = datetime.fromtimestamp(ut)
+            until = datetime.fromtimestamp(ut, tz=timezone.utc).replace(tzinfo=None)
 
         needed_sets = self.config.sets_needed.copy()
         if set is not None:

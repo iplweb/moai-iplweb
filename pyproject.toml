@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "MOAI-iplweb"
-version = "2.0.0"
+version = "2.0.1"
 description = "MOAI, A Open Access Server Platform for Institutional Repositories"
 readme = "README.md"
 license = "BSD-3-Clause"

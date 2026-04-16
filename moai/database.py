@@ -1,4 +1,5 @@
 import datetime
+from datetime import timezone
 import json
 from pkg_resources import iter_entry_points
 
@@ -238,8 +239,8 @@ class SQLDatabase(object):
             batch_size = 0
 
         # make sure until date is set, and not in future
-        if until_date == None or until_date > datetime.datetime.utcnow():
-            until_date = datetime.datetime.utcnow()
+        if until_date == None or until_date > datetime.datetime.now(timezone.utc).replace(tzinfo=None):
+            until_date = datetime.datetime.now(timezone.utc).replace(tzinfo=None)
 
         query = self._records.select(order_by=[sql.desc(self._records.c.modified)])
 
