@@ -3,15 +3,17 @@ import os
 import time
 import datetime
 
-import pkg_resources
-from pkg_resources import iter_entry_points
+from importlib.metadata import PackageNotFoundError, entry_points, version
 from configparser import ConfigParser
 from optparse import OptionParser
 
 from moai.utils import get_duration, get_moai_log, ProgressBar
 from moai.database import SQLDatabase
 
-VERSION = pkg_resources.working_set.by_key["moai-iplweb"].version
+try:
+    VERSION = version("MOAI-iplweb")
+except PackageNotFoundError:
+    VERSION = "0.0.0"
 
 
 def update_moai():
@@ -106,7 +108,7 @@ def update_moai():
     database = SQLDatabase(config["database"])
 
     ContentClass = None
-    for content_point in iter_entry_points(group="moai.content", name=config["content"]):
+    for content_point in entry_points(group="moai.content", name=config["content"]):
         ContentClass = content_point.load()
 
     if ContentClass is None:
@@ -115,7 +117,7 @@ def update_moai():
 
     provider_name = config["provider"].split(":", 1)[0]
     provider = None
-    for provider_point in iter_entry_points(group="moai.provider", name=provider_name):
+    for provider_point in entry_points(group="moai.provider", name=provider_name):
         provider = provider_point.load()(config["provider"])
 
     if provider is None:

@@ -1,7 +1,7 @@
 import datetime
 from datetime import timezone
 import json
-from pkg_resources import iter_entry_points
+from importlib.metadata import entry_points
 
 import sqlalchemy as sql
 
@@ -10,7 +10,7 @@ from moai.utils import check_type
 
 def get_database(uri, config=None):
     prefix = uri.split(":")[0]
-    for entry_point in iter_entry_points(group="moai.database", name=prefix):
+    for entry_point in entry_points(group="moai.database", name=prefix):
         dbclass = entry_point.load()
         try:
             return dbclass(uri, config)

@@ -4,11 +4,11 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "MOAI-iplweb"
-version = "2.0.1"
+version = "2.0.2"
 description = "MOAI, A Open Access Server Platform for Institutional Repositories"
 readme = "README.md"
 license = "BSD-3-Clause"
-requires-python = ">=3.9"
+requires-python = ">=3.10"
 authors = [
     {name = "Michał Pasternak", email = "m@iplweb.pl"},
 ]
@@ -27,7 +27,6 @@ dependencies = [
     "pasteDeploy",
     "pasteScript",
     "sqlalchemy<2",
-    "setuptools<80",
 ]
 
 [project.optional-dependencies]

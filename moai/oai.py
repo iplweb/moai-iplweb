@@ -1,7 +1,5 @@
-from pkg_resources import iter_entry_points
-
 from datetime import datetime, timezone
-import pkg_resources
+from importlib.metadata import PackageNotFoundError, distribution, entry_points
 import time
 
 import oaipmh
@@ -11,7 +9,7 @@ import oaipmh.error
 
 
 def get_writer(prefix, config, db):
-    for writer in iter_entry_points(group="moai.format", name=prefix):
+    for writer in entry_points(group="moai.format", name=prefix):
         return writer.load()(prefix, config, db)
     else:
         raise ValueError("No such metadata format registered: %s" % prefix)
@@ -41,11 +39,20 @@ class OAIServer(object):
         )
 
         version = ""
-        pyoai_egg = pkg_resources.working_set.find(pkg_resources.Requirement.parse("pyoai"))
-        moai_egg = pkg_resources.working_set.find(pkg_resources.Requirement.parse("MOAI"))
+        try:
+            pyoai_version = distribution("pyoai").version
+        except PackageNotFoundError:
+            pyoai_version = None
+        moai_version = None
+        for name in ("MOAI-iplweb", "MOAI"):
+            try:
+                moai_version = distribution(name).version
+                break
+            except PackageNotFoundError:
+                continue
 
-        if moai_egg and pyoai_egg:
-            version = "<version>%s (using pyoai%s)</version>" % (moai_egg.version, pyoai_egg.version)
+        if moai_version and pyoai_version:
+            version = "<version>%s (using pyoai%s)</version>" % (moai_version, pyoai_version)
         result.add_description(
             "<toolkit xsi:schemaLocation="
             '"http://oai.dlib.vt.edu/OAI/metadata/toolkit '
