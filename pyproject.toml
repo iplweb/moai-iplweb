@@ -40,6 +40,7 @@ dev = [
 ]
 
 [project.urls]
+Funding = "https://buymeacoffee.com/mpasternak"
 Homepage = "http://iplweb.pl/"
 
 [project.scripts]
