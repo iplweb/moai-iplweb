@@ -412,6 +412,17 @@ class ServerTest(TestCase):
         xpath = XPath(doc, nsmap={"oai": "http://www.openarchives.org/OAI/2.0/"})
         self.assertEqual(xpath.string("//oai:repositoryName"), "Test Server")
 
+    def test_identify_toolkit_version(self):
+        # Regresja z 2.0.3: lookup wersji szukal dystrybucji "pyoai", ktora po
+        # migracji na `oaipmh` nie istnieje - PackageNotFoundError cicho gasil
+        # caly element <version> w bloku <toolkit>.
+        xml = urlopen("http://test?verb=Identify").read()
+        doc = etree.fromstring(xml)
+        xpath = XPath(doc, nsmap={"tk": "http://oai.dlib.vt.edu/OAI/metadata/toolkit"})
+        version = xpath.string("//tk:toolkit/tk:version")
+        self.assertTrue(version, "element <version> zniknal z <toolkit>")
+        self.assertIn("using oaipmh", version)
+
     def test_list_identifiers(self):
         xml = urlopen("http://test?verb=ListIdentifiers&metadataPrefix=oai_dc").read()
         doc = etree.fromstring(xml)

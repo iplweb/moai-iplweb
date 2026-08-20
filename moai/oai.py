@@ -39,10 +39,17 @@ class OAIServer(object):
         )
 
         version = ""
-        try:
-            pyoai_version = distribution("pyoai").version
-        except PackageNotFoundError:
-            pyoai_version = None
+        # `oaipmh` (utrzymywany fork ETH Library) wyparł `pyoai` w 2.0.3;
+        # `pyoai` zostaje jako fallback dla starych srodowisk, gdzie ten sam
+        # top-level pakiet `oaipmh` pochodzi jeszcze z tamtej dystrybucji.
+        oaipmh_dist = oaipmh_version = None
+        for name in ("oaipmh", "pyoai"):
+            try:
+                oaipmh_version = distribution(name).version
+                oaipmh_dist = name
+                break
+            except PackageNotFoundError:
+                continue
         moai_version = None
         for name in ("MOAI-iplweb", "MOAI"):
             try:
@@ -51,8 +58,12 @@ class OAIServer(object):
             except PackageNotFoundError:
                 continue
 
-        if moai_version and pyoai_version:
-            version = "<version>%s (using pyoai%s)</version>" % (moai_version, pyoai_version)
+        if moai_version and oaipmh_version:
+            version = "<version>%s (using %s%s)</version>" % (
+                moai_version,
+                oaipmh_dist,
+                oaipmh_version,
+            )
         result.add_description(
             "<toolkit xsi:schemaLocation="
             '"http://oai.dlib.vt.edu/OAI/metadata/toolkit '
