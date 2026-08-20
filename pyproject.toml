@@ -27,6 +27,7 @@ dependencies = [
     "pasteDeploy",
     "pasteScript",
     "sqlalchemy<2",
+    "zope.interface",
 ]
 
 [project.optional-dependencies]
@@ -62,7 +63,7 @@ oracle = "moai.database:SQLDatabase"
 file = "moai.provider.file:FileBasedContentProvider"
 list = "moai.provider.list:ListBasedContentProvider"
 oai = "moai.provider.oai:OAIBasedContentProvider"
-fedora = "moai.provider.feadora:FedoraBasedContentProvider"
+fedora = "moai.provider.fedora:FedoraBasedContentProvider"
 
 [project.entry-points."moai.format"]
 oai_dc = "moai.metadata.oaidc:OAIDC"

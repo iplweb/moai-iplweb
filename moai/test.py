@@ -1,5 +1,8 @@
 # coding=utf8
 import os
+import shutil
+import tempfile
+from importlib.metadata import entry_points
 from unittest import TestCase
 import datetime
 from urllib import request
@@ -12,7 +15,9 @@ from moai.utils import XPath
 from moai.database import SQLDatabase as Database
 from moai.server import Server, FeedConfig
 from moai.wsgi import MOAIWSGIApp
+from moai.interfaces import IContentProvider
 from moai.provider.file import FileBasedContentProvider
+from moai.provider.oai import OAIBasedContentProvider
 from moai.example import ExampleContent
 
 urlopen = request.urlopen
@@ -481,3 +486,62 @@ class ServerTest(TestCase):
         doc = etree.fromstring(xml)
         xpath = XPath(doc, nsmap={"oai": "http://www.openarchives.org/OAI/2.0/"})
         self.assertEqual(xpath.strings("//oai:identifier"), ["oai:spamspamspam"])
+
+
+class _StubOAIHeader(object):
+    """Minimalny odpowiednik naglowka rekordu z biblioteki oaipmh."""
+
+    def __init__(self, identifier):
+        self._identifier = identifier
+
+    def identifier(self):
+        return self._identifier
+
+
+class OAIProviderTest(TestCase):
+    """Regresja: moai/provider/oai.py deklarowal interfejs przez `implements()`
+    z zope.interface - API Pythona 2, usuniete w zope.interface 5. Modul byl
+    przez to niemozliwy do zaimportowania, a entry-point `oai` konczyl sie
+    ImportError. Import OAIBasedContentProvider na gorze tego pliku jest
+    czescia testu.
+    """
+
+    def setUp(self):
+        self.path = tempfile.mkdtemp()
+        self.provider = OAIBasedContentProvider("http://example.org/oai", "file://%s" % self.path)
+
+    def tearDown(self):
+        shutil.rmtree(self.path, ignore_errors=True)
+
+    def test_provider_declares_interface(self):
+        self.assertTrue(IContentProvider.implementedBy(OAIBasedContentProvider))
+        self.assertTrue(IContentProvider.providedBy(self.provider))
+
+    def test_process_record_writes_file(self):
+        element = etree.fromstring("<doc><title>Spam!</title></doc>")
+        self.assertTrue(self.provider._process_record(_StubOAIHeader("oai:spam"), element))
+        path = os.path.join(self.path, "oai:spam.xml")
+        self.assertTrue(os.path.isfile(path))
+        with open(path, "rb") as fp:
+            self.assertIn(b"<title>Spam!</title>", fp.read())
+
+    def test_harvested_file_is_visible_to_file_provider(self):
+        element = etree.fromstring("<doc><title>Spam!</title></doc>")
+        self.provider._process_record(_StubOAIHeader("oai:spam"), element)
+        self.assertEqual(sorted(FileBasedContentProvider.update(self.provider)), ["oai:spam.xml"])
+
+
+class EntryPointTest(TestCase):
+    """Kazdy entry-point z grupy moai.provider musi dac sie zaladowac.
+    Wczesniej `oai` (i dziedziczaca po nim `fedora`) wywalaly sie na
+    ImportError, a `fedora` dodatkowo wskazywala na nieistniejacy modul
+    moai.provider.feadora (literowka).
+    """
+
+    def test_provider_entry_points_load(self):
+        providers = list(entry_points(group="moai.provider"))
+        if not providers:
+            self.skipTest("pakiet nie jest zainstalowany - brak metadanych entry-pointow")
+        self.assertEqual(sorted(ep.name for ep in providers), ["fedora", "file", "list", "oai"])
+        for entry_point in providers:
+            entry_point.load()
