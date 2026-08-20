@@ -26,7 +26,7 @@ dependencies = [
     "paste",
     "pasteDeploy",
     "pasteScript",
-    "sqlalchemy<2",
+    "sqlalchemy>=2,<3",
     "zope.interface",
 ]
 
