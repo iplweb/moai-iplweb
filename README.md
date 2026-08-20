@@ -21,9 +21,9 @@ This is a maintained fork of [MOAI by Infrae](https://github.com/infrae/moai/), 
 
 ### Supported Python versions
 
-| Python | 3.9 | 3.10 | 3.11 | 3.12 | 3.13 |
-|--------|-----|------|------|------|------|
-|        | ✓   | ✓    | ✓    | ✓    | ✓    |
+| Python | 3.10 | 3.11 | 3.12 | 3.13 | 3.14 |
+|--------|------|------|------|------|------|
+|        | ✓    | ✓    | ✓    | ✓    | ✓    |
 
 We recommend using [uv](https://docs.astral.sh/uv/) for dependency management. Instructions below are for Unix, but MOAI should also work on Windows.
 
