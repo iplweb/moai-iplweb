@@ -1,6 +1,6 @@
 import os
 
-from zope.interface import implements
+from zope.interface import implementer
 from oaipmh.client import Client
 from oaipmh.metadata import MetadataRegistry
 from oaipmh.error import NoRecordsMatchError
@@ -10,15 +10,14 @@ from moai.interfaces import IContentProvider
 from moai.provider.file import FileBasedContentProvider
 
 
+@implementer(IContentProvider)
 class OAIBasedContentProvider(FileBasedContentProvider):
     """Providers content by harvesting OAI feeds.
     Implements the :ref:`IContentProvider` interface
     """
 
-    implements(IContentProvider)
-
     def __init__(self, oai_url, output_path, metadata_prefix="oai_dc"):
-        super(OAIBasedContentProvider, self).__init__(output_path, "*.xml")
+        super().__init__(output_path, "*.xml")
         self._url = oai_url
         self._prefix = metadata_prefix
 
@@ -39,15 +38,14 @@ class OAIBasedContentProvider(FileBasedContentProvider):
         except NoRecordsMatchError:
             pass
 
-        super(OAIBasedContentProvider, self).update()
+        super().update()
 
     def _get_id(self, header):
         return header.identifier()
 
     def _process_record(self, header, element):
         oai_id = self._get_id(header)
-        path = os.path.join(self.path, "%s.xml" % oai_id)
-        fp = open(path, "w")
-        fp.write(etree.tostring(element, encoding="utf8"))
-        fp.close()
+        path = os.path.join(self._path, "%s.xml" % oai_id)
+        with open(path, "wb") as fp:
+            fp.write(etree.tostring(element, encoding="utf-8"))
         return True
