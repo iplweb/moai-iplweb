@@ -1,0 +1,146 @@
+name: Release
+
+# Publikacja na PyPI przez Trusted Publishing (OIDC) - BEZ dlugozyjacego
+# tokena API. GitHub wystawia krotkotrwaly token OIDC zwiazany z tym repo,
+# tym workflow i tym srodowiskiem; PyPI wymienia go na uprawnienie do
+# uploadu wylacznie dla tego projektu. Nie ma sekretu, ktory moglby wyciec.
+#
+# WARUNEK WSTEPNY (jednorazowo, po stronie PyPI - panel wlasciciela):
+#   pypi.org -> projekt MOAI-iplweb -> Manage -> Publishing ->
+#   "Add a new publisher" -> GitHub:
+#     Owner:              iplweb
+#     Repository:         moai-iplweb
+#     Workflow name:      release.yml
+#     Environment name:   pypi
+#   Bez tego wpisu upload konczy sie 403 - workflow nie ma sie jak
+#   "przedstawic" PyPI. To samo powtorz na test.pypi.org ze srodowiskiem
+#   `testpypi`, jesli chcesz korzystac z reznego uruchomienia.
+#
+# Wydanie = push taga `vX.Y.Z`. Wersja w tagu MUSI zgadzac sie z
+# `project.version` w pyproject.toml - job `verify` to sprawdza i przerywa
+# przed jakimkolwiek uploadem.
+#
+# Akcje sa pinowane po SHA (nie po tagu ruchomym): tag `@v5` mozna przepiac
+# na dowolny commit, wiec sam tag nie jest gwarancja tresci. Komentarz obok
+# SHA mowi, ktora to wersja.
+
+on:
+  push:
+    tags:
+      - "v*"
+  # Reczne uruchomienie - domyslnie na TestPyPI, do sprawdzenia calej
+  # sciezki bez palenia numeru wersji na produkcyjnym PyPI.
+  workflow_dispatch:
+    inputs:
+      target:
+        description: "Gdzie opublikowac"
+        required: true
+        default: testpypi
+        type: choice
+        options: [testpypi, pypi]
+
+# Domyslnie zero uprawnien; kazdy job dostaje tylko to, czego potrzebuje.
+permissions: {}
+
+jobs:
+  verify:
+    name: Zgodnosc taga z wersja + testy
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          # Bez tego checkout zostawia token w .git/config, skad moze
+          # trafic do artefaktu albo cache.
+          persist-credentials: false
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@20cfd1bf945f4377ade1205e4dbc17946fc9a30d # v10.0.1
+        with:
+          # Cache wylaczony swiadomie: to workflow wydaniowy, a zatruty
+          # wpis cache moglby podmienic to, co wyladuje w paczce.
+          enable-cache: false
+
+      - name: Set up Python
+        run: uv python install 3.13
+
+      # Rozjazd taga i pyproject.toml to najczestszy blad wydaniowy: tag
+      # v2.1.0 przy `version = "2.0.4"` wypchnalby na PyPI paczke o zlym
+      # numerze, ktorej NIE DA SIE nadpisac ani cofnac.
+      - name: Sprawdz, czy tag == project.version
+        if: startsWith(github.ref, 'refs/tags/v')
+        env:
+          TAG_NAME: ${{ github.ref_name }}
+        run: |
+          TAG="${TAG_NAME#v}"
+          PROJ=$(python3 -c \
+            'import tomllib; print(tomllib.load(open("pyproject.toml","rb"))["project"]["version"])')
+          echo "tag=$TAG  pyproject=$PROJ"
+          if [ "$TAG" != "$PROJ" ]; then
+            echo "::error::Tag $TAG != project.version $PROJ - przerywam przed uploadem."
+            exit 1
+          fi
+
+      - name: Testy
+        run: |
+          uv sync --extra test
+          uv run pytest -q
+
+  build:
+    name: Zbuduj sdist + wheel
+    needs: verify
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@20cfd1bf945f4377ade1205e4dbc17946fc9a30d # v10.0.1
+        with:
+          enable-cache: false
+
+      - name: Build
+        run: uv build
+
+      - name: Sprawdz metadane paczki
+        run: uvx --from twine twine check dist/*
+
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: dist
+          path: dist/
+          if-no-files-found: error
+
+  publish:
+    name: Publikacja (OIDC)
+    needs: build
+    runs-on: ubuntu-latest
+    # `environment` jest czescia tozsamosci OIDC, ktora PyPI weryfikuje -
+    # musi zgadzac sie z konfiguracja Trusted Publishera. Pozwala tez
+    # obwarowac wydanie regula ochronna w ustawieniach repo (np. recznym
+    # zatwierdzeniem przed uploadem).
+    environment:
+      name: ${{ (github.event_name == 'workflow_dispatch' && inputs.target == 'testpypi') && 'testpypi' || 'pypi' }}
+      url: ${{ (github.event_name == 'workflow_dispatch' && inputs.target == 'testpypi') && 'https://test.pypi.org/p/MOAI-iplweb' || 'https://pypi.org/p/MOAI-iplweb' }}
+    permissions:
+      # JEDYNE potrzebne uprawnienie. Zadnych sekretow, zadnego tokena API.
+      id-token: write
+    steps:
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: dist
+          path: dist/
+
+      - name: Publikuj na TestPyPI
+        if: github.event_name == 'workflow_dispatch' && inputs.target == 'testpypi'
+        uses: pypa/gh-action-pypi-publish@dc37677b2e1c63e2034f94d8a5b11f265b73ba33 # v1.14.2
+        with:
+          repository-url: https://test.pypi.org/legacy/
+
+      - name: Publikuj na PyPI
+        if: "!(github.event_name == 'workflow_dispatch' && inputs.target == 'testpypi')"
+        uses: pypa/gh-action-pypi-publish@dc37677b2e1c63e2034f94d8a5b11f265b73ba33 # v1.14.2
